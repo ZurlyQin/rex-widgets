@@ -30,13 +30,13 @@ https://raw.githubusercontent.com/ZurlyQin/rex-widgets/main/tmdb-movie-collectio
 
 点击电影会使用 Rex 内置 TMDB 详情页。此模块提供影片发现与资料；播放由 Rex 已连接的资源库负责。
 
-## 开发依据
+## Based on
 
 - [Forward 官方仓库与示例](https://github.com/InchStudio/ForwardWidgets)
 - [Forward Widget 开发者指南](https://forward-2.gitbook.io/forward/fu-lu-er-forward-widget-kai-fa-zhe-zhi-chi)
 - [TMDB Discover Movie 接口](https://developer.themoviedb.org/reference/discover-movie)
 
-本模块为自定义模块，与 TMDB 无官方合作或认证关系。
+本模块为自定义模块，非TMDB或Rex官方模块。
 
 ## 验证结果（2026-10-29）
 
