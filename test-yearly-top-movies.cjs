@@ -64,12 +64,39 @@ test("无中文标题/海报时可返回，空页正常结束", async () => {
   assert.equal((await setup(() => ({ results: [] })).load()).length, 0);
 });
 
-test("非法年份与页码不发请求，超出 API 页数上限正常结束", async () => {
+test("非法年份与页码不发请求，超过 Top 50 的页数正常结束", async () => {
   const { load, calls } = setup(() => ({ results: [] }));
   for (const year of [2019, 2026, "2025oops", 2020.5]) await assert.rejects(load({ year }), /年份/);
   for (const page of [0, -1, 1.5, "abc"]) await assert.rejects(load({ page }), /页码/);
-  assert.equal((await load({ page: 501 })).length, 0);
+  for (const page of [4, 5, 501]) assert.equal((await load({ page })).length, 0);
   assert.equal(calls.length, 0);
+});
+
+test("六个年份均仅返回前 50 名：20 + 20 + 10，第四页起不再请求", async () => {
+  const { load, calls } = setup((api, params) => ({
+    results: Array.from({ length: 20 }, (_, index) => ({
+      ...movie,
+      id: (params.page - 1) * 20 + index + 1,
+      release_date: params.primary_release_year + "-01-02",
+      vote_average: 10 - ((params.page - 1) * 20 + index) / 100
+    }))
+  }));
+  for (let year = 2020; year <= 2025; year++) {
+    const pages = [];
+    const start = calls.length;
+    for (let page = 1; page <= 5; page++) pages.push(await load({ year, page: String(page) }));
+    assert.deepEqual(pages.map(items => items.length), [20, 20, 10, 0, 0]);
+    assert.deepEqual(pages.flat().map(item => item.id), Array.from({ length: 50 }, (_, index) => index + 1));
+    assert.ok(pages.flat().every(item => item.releaseDate.startsWith(String(year))));
+    assert.deepEqual(calls.slice(start).map(call => call.params.page), [1, 2, 3]);
+  }
+});
+
+test("直接请求第三页也只返回第 41—50 名，不足 50 部时不补造条目", async () => {
+  const { load } = setup(() => ({ results: Array.from({ length: 20 }, (_, index) => ({ ...movie, id: index + 41 })) }));
+  assert.deepEqual(Array.from(await load({ year: 2024, page: 3 }), item => item.id), [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
+  const short = setup(() => ({ results: [movie] }));
+  assert.equal((await short.load({ page: 3 })).length, 1);
 });
 
 test("API 错误不伪装成空榜单，网络错误传回 Rex", async () => {
