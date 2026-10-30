@@ -1,3 +1,6 @@
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-orange)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/JulianGarage)
+
 # Rex / Forward 电影精选模块
 
 个人首个vibecoding项目
