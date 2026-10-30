@@ -1,16 +1,16 @@
 WidgetMetadata = {
   id: "rex.julian.tmdb.yearlyTopMovies",
   title: "年度高分电影 · 2020—2025",
-  version: "1.0.0",
+  version: "1.0.1",
   requiredVersion: "0.0.1",
-  description: "按上映年份筛选电影，TMDB 评分从高到低，至少 500 人评分。",
+  description: "每年 Top 50，TMDB 评分从高到低，至少 500 人评分。",
   author: "Julian",
   site: "https://www.themoviedb.org",
   modules: [
     {
       id: "yearlyTopMovies",
       title: "年度高分电影",
-      description: "选择 2020—2025 年，按当前 TMDB 评分降序排列（至少 500 人评分）。",
+      description: "选择 2020—2025 年，每年仅展示评分最高的 50 部电影（至少 500 人评分）。",
       functionName: "loadYearlyTopMovies",
       cacheDuration: 3600,
       requiresWebView: false,
@@ -45,8 +45,10 @@ async function loadYearlyTopMovies(params = {}) {
   if (!Number.isInteger(page) || page < 1) {
     throw new Error("页码必须是大于 0 的整数。");
   }
-  // TMDB 最多允许请求前 500 页；超过后向 Rex 返回列表结束。
-  if (page > 500) return [];
+  // TMDB 每页 20 条：前两页各 20 条，第三页仅取 10 条，之后结束。
+  const pageSize = 20;
+  const remaining = 50 - (page - 1) * pageSize;
+  if (remaining <= 0) return [];
 
   const response = await Widget.tmdb.get("discover/movie", {
     params: {
@@ -66,7 +68,7 @@ async function loadYearlyTopMovies(params = {}) {
   }
 
   // 排序与年份过滤在服务端完成，保持跨页排序一致。
-  return response.results.map(function (movie) {
+  return response.results.slice(0, Math.min(pageSize, remaining)).map(function (movie) {
     return {
       id: movie.id,
       type: "tmdb",
